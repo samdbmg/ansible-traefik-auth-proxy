@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include samdbmg.traefik_auth_proxy"
+      include_role:
+        name: "samdbmg.traefik_auth_proxy"
