@@ -1,0 +1,65 @@
+---
+name: CI with Molecule
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+  # Build master every Thursday at 7AM (schedule only applies to the master branch)
+  schedule:
+    - cron: "0 7 * * 4"
+
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Append GitHub Actions system path
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install lint dependencies.
+        run: pip3 install ansible ansible-lint yamllint
+      - name: Lint code.
+        run: |
+            yamllint .
+            # Ignore role name when linting
+            ansible-lint -x 'role-name'
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - distro: ubuntu1804
+          - distro: ubuntu2004
+          - distro: centos7
+          - distro: rockylinux8
+    env:
+      PY_COLORS: '1'
+      ANSIBLE_FORCE_COLOR: '1'
+      MOLECULE_DISTRO: ${{ matrix.distro }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install deps
+        run: pip3 install ansible ansible-lint molecule[docker]
+
+      - name: Create instances, prepare environment
+        run: molecule create && molecule prepare
+      - name: Apply the role to the instance, run tests
+        run: molecule converge
+      - name: Check the role is idempotent
+        run: molecule idempotence
+      - name: Run tests
+        run: molecule verify
+      - name: Clean up instance
+        run: molecule destroy

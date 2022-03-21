@@ -3,11 +3,23 @@ dependency:
   name: galaxy
 driver:
   name: docker
+lint: |
+  set -e
+  yamllint .
+  # Ignore role name when linting
+  ansible-lint -x 'role_name'
 platforms:
   - name: instance
-    image: quay.io/centos/centos:stream8
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2004}-ansible:latest
+    tmpfs:
+      - /run
+      - /tmp
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: ${MOLECULE_DOCKER_COMMAND:-""}  # systemd won't work if this is left to molecule's default
     pre_build_image: true
 provisioner:
   name: ansible
-verifier:
-  name: ansible
+scenario:
+  name: default
