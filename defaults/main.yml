@@ -1,2 +1,64 @@
 ---
 # defaults file for traefik_auth_proxy
+
+# Email address to pass to letsencrypt
+# proxy_letsencrypt_email: (REQUIRED)
+
+# Domain this proxy serves subdomains of
+# proxy_domain: (REQUIRED)
+
+# Domain on which the dashboard appears
+proxy_dashboard_domain: "dashboard.{{ proxy_domain }}"
+
+# Should the production LetsEncrypt be used (instead of staging)
+proxy_use_le_prod: false
+
+# Should the forward-auth proxy be enabled?
+proxy_enable_auth: true
+
+# Use HTTP or DNS to issue TLS certificates
+proxy_cert_method: http  # dns is the other option
+
+# If using DNS, which provider are you using
+# proxy_cert_dns_provider:  # REQUIRED if using dns above
+
+# If using the DNS provider, set an env vars needed (e.g. access keys) here, as - KEY=VALUE pairs
+proxy_dns_provider_env_vars: []
+
+# Chosen OAuth provider
+proxy_auth_provider: oidc
+
+# If using OAuth here, figure out the set of config options needed for your environment from
+# https://github.com/thomseddon/traefik-forward-auth/wiki/Provider-Setup, then convert them to their
+# environment variable equivalents and set them here (remove the {} line first)
+proxy_auth_provider_env_vars: {}
+  # # Options for google provider
+  # PROVIDERS_GOOGLE_CLIENT_ID:
+  # PROVIDERS_GOOGLE_CLIENT_ID:
+  # PROVIDERS_GOOGLE_PROMPT:
+  # # Options for oidc provider
+  # PROVIDERS_OIDC_ISSUER_URL:
+  # PROVIDERS_OIDC_CLIENT_ID:
+  # PROVIDERS_OIDC_CLIENT_SECRET:
+  # PROVIDERS_OIDC_RESOURCE:
+  # # Options for generic-oauth provider
+  # PROVIDERS_GENERIC_OAUTH_AUTH_URL:
+  # PROVIDERS_GENERIC_OAUTH_TOKEN_URL:
+  # PROVIDERS_GENERIC_OAUTH_USER_URL:
+  # PROVIDERS_GENERIC_OAUTH_CLIENT_ID:
+  # PROVIDERS_GENERIC_OAUTH_CLIENT_SECRET:
+  # PROVIDERS_GENERIC_OAUTH_SCOPE:
+  # PROVIDERS_GENERIC_OAUTH_TOKEN_STYLE:
+  # PROVIDERS_GENERIC_OAUTH_RESOURCE:
+
+# Configure the role itself: there are unlikely to need changing
+proxy_config_dir: /etc/traefik_proxy
+proxy_docker_dir: /etc/traefik_proxy
+
+proxy_dns_servers:
+  - "1.1.1.1"
+  - "8.8.8.8"
+
+proxy_auth_domain: "auth.{{ proxy_domain }}"
+
+proxy_compose_project: traefik_auth_proxy

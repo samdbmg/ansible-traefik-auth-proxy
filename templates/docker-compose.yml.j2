@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.5
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+    volumes:
+      - "{{ proxy_config_dir }}:/etc/traefik:ro"
+      - "{{ proxy_config_dir }}/certs:/certs:rw"
+    restart: always
+    depends_on:
+      - docker-socket-proxy
+{% if proxy_enable_auth %}
+      - forward-auth
+{% endif %}
+    networks:
+      - docker-socket
+      - traefik
+      - default
+    extra_hosts:
+      host.docker.internal: host-gateway
+    environment: {{ proxy_dns_provider_env_vars }}
+{% if proxy_enable_auth %}
+  forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    environment: {{ proxy_auth_provider_env_vars }}
+    command: --config /etc/traefik/forward-auth.ini
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik-forward-auth.rule=Host(`{{ proxy_auth_domain }}`)
+      - traefik.http.routers.traefik-forward-auth.tls.certresolver=default
+      - traefik.http.routers.traefik-forward-auth.middlewares=traefik-forward-auth
+      - traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://forward-auth:4181
+      - traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User
+      - traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181
+    restart: unless-stopped
+    volumes:
+      - "{{ proxy_config_dir }}:/etc/traefik:ro"
+    networks:
+      - traefik
+{% endif %}
+
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy
+    networks:
+      - docker-socket
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CONTAINERS=1
+    restart: always
+
+
+networks:
+  docker-socket:
+  traefik:
+    name: traefik

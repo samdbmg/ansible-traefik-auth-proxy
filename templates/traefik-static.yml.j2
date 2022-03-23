@@ -1,0 +1,61 @@
+entryPoints:
+  insecure:
+    address: ":80"
+{% if traefik_requires_http != true %}
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+{% endif %}
+
+  websecure:
+    address: ":443"
+
+api:
+  dashboard: true
+
+providers:
+  docker:
+    endpoint: "tcp://docker-socket-proxy:2375"
+    exposedByDefault: false
+  file:
+    directory: {{ traefik_config_dir }}
+
+certificatesResolvers:
+  default:
+    acme:
+      email: "{{ proxy_letsencrypt_email }}"
+      storage: /certs/acme.json
+      caserver: "{{ 'https://acme-v02.api.letsencrypt.org/directory' if proxy_use_le_prod else 'https://acme-staging-v02.api.letsencrypt.org/directory' }}"
+{% if proxy_cert_method == "http" %}
+      httpChallenge:
+        entryPoint: insecure
+{% elif proxy_cert_method == "dns" %}
+      dnsChallenge:
+        provider: "{{ proxy_cert_dns_provider }}"
+        resolvers: {{ proxy_dns_servers }}
+{% endif %}
+
+# Don't verify TLS on backends - they'll be self-signed anyway
+serversTransport:
+  insecureSkipVerify: true
+
+# Configure the dashboard on the default dns name, and apply auth0
+http:
+  routers:
+    dashboard:
+      rule: Host(`{{ proxy_dashboard_domain | trim('.') }}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`) || PathPrefix(`/_oauth`))
+      entryPoints:
+        - websecure
+      service: api@internal
+      tls:
+        certResolver: default
+      middlewares:
+        - "traefik-forward-auth@docker"
+
+
+{% if group_vault_traefik_pilot_token is defined %}
+pilot:
+  token: "{{ group_vault_traefik_pilot_token }}"
+{% endif %}

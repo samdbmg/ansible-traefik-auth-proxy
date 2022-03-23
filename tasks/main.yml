@@ -1,2 +1,28 @@
 ---
 # tasks file for traefik_auth_proxy
+
+# Make somewhere for config to live
+- name: Create required paths
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ proxy_config_dir }}"
+    - "{{ proxy_docker_dir }}"
+
+# TODO: Generate a secret
+
+# Template out config file for Traefik
+- name: Create Traefik config file
+  template:
+    src: "traefik-static.yml.j2"
+    dest: "{{ proxy_config_dir }}"/traefik-static.yml
+
+# Template out Compose file
+- name: Create docker-compose file
+  template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ proxy_docker_dir }}/docker-compose.yml"
+  when: skip_launch is not defined
+
+# Launch containers
