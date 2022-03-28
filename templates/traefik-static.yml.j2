@@ -1,7 +1,7 @@
 entryPoints:
   insecure:
     address: ":80"
-{% if traefik_requires_http != true %}
+{% if proxy_requires_http != true %}
     http:
       redirections:
         entryPoint:
@@ -20,7 +20,7 @@ providers:
     endpoint: "tcp://docker-socket-proxy:2375"
     exposedByDefault: false
   file:
-    directory: {{ traefik_config_dir }}
+    directory: {{ proxy_config_dir }}
 
 certificatesResolvers:
   default:
@@ -55,7 +55,7 @@ http:
         - "traefik-forward-auth@docker"
 
 
-{% if group_vault_traefik_pilot_token is defined %}
+{% if proxy_traefik_pilot_token is defined %}
 pilot:
-  token: "{{ group_vault_traefik_pilot_token }}"
+  token: "{{ proxy_traefik_pilot_token }}"
 {% endif %}

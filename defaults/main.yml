@@ -26,7 +26,7 @@ proxy_cert_method: http  # dns is the other option
 proxy_dns_provider_env_vars: []
 
 # Chosen OAuth provider
-proxy_auth_provider: oidc
+proxy_oauth_provider: oidc
 
 # If using OAuth here, figure out the set of config options needed for your environment from
 # https://github.com/thomseddon/traefik-forward-auth/wiki/Provider-Setup, then convert them to their
@@ -50,6 +50,12 @@ proxy_auth_provider_env_vars: {}
   # PROVIDERS_GENERIC_OAUTH_SCOPE:
   # PROVIDERS_GENERIC_OAUTH_TOKEN_STYLE:
   # PROVIDERS_GENERIC_OAUTH_RESOURCE:
+
+# Set to true to enable HTTP endpoints with traefik (rather than just redirecting to https)
+proxy_requires_http: false
+
+# If you want to use traefik pilot to monitor your proxy, set the token here
+# proxy_traefik_pilot_token:
 
 # Configure the role itself: there are unlikely to need changing
 proxy_config_dir: /etc/traefik_proxy

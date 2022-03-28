@@ -16,7 +16,7 @@
 - name: Create Traefik config file
   template:
     src: "traefik-static.yml.j2"
-    dest: "{{ proxy_config_dir }}"/traefik-static.yml
+    dest: "{{ proxy_config_dir }}/traefik-static.yml"
 
 # Template out Compose file
 - name: Create docker-compose file
