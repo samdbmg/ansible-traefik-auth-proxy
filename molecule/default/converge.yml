@@ -1,6 +1,9 @@
 ---
 - name: Converge
   hosts: all
+  vars:
+    proxy_domain: proxy.example.com
+    proxy_letsencrypt_email: blackhole@samn.co.uk
   tasks:
     - name: "Include samdbmg.traefik_auth_proxy"
       include_role:

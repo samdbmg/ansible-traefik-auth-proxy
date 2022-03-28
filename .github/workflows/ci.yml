@@ -62,4 +62,4 @@ jobs:
       - name: Run tests
         run: molecule verify
       - name: Clean up instance
-        run: molecule destroy
+        run: molecule cleanup && molecule destroy

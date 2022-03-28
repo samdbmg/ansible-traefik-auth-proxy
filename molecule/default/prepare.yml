@@ -1,0 +1,9 @@
+---
+- name: Set up container to behave like a Docker host
+  hosts: all
+  become: true
+  tasks:
+    # Apply the Docker socket workaround in https://github.com/ansible-community/molecule/issues/1568
+    - name: Link the docker socket
+      raw: ln -s /tmp/docker.sock /var/run/docker.sock
+      changed_when: false

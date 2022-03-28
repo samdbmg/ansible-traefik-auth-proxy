@@ -17,6 +17,10 @@ platforms:
       - /run/lock
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      # CAUTION: This gives the test container access to your underlying system
+      # This is safe in CI because the VM is disposable, but be careful locally
+      # Applies workaround to https://github.com/ansible-community/molecule/issues/1568
+      - /var/run/docker.sock:/tmp/docker.sock
     command: ${MOLECULE_DOCKER_COMMAND:-""}  # systemd won't work if this is left to molecule's default
     pre_build_image: true
 provisioner:
