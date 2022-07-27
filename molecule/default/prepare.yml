@@ -7,3 +7,9 @@
     - name: Link the docker socket
       raw: ln -s /tmp/docker.sock /var/run/docker.sock
       changed_when: false
+    - name: Install the docker module
+      pip:
+        name:
+          - docker
+          - docker-compose
+        state: present
