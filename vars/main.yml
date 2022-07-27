@@ -1,9 +1,2 @@
 ---
 # vars file for traefik_auth_proxy
-
-# Other env vars needed for the forward auth container
-_proxy_auth_env_vars:
-  - DEFAULT_PROVIDER={{ proxy_oauth_provider }}
-  - AUTH_HOST={{ proxy_auth_domain }}
-  - COOKIE_DOMAIN={{ proxy_domain }}
-  - SECRET=TODO_GENERATE_THIS_IN_A_MUCH_BETTER_WAY_THAN_THIS

@@ -10,13 +10,37 @@
     - "{{ proxy_config_dir }}"
     - "{{ proxy_docker_dir }}"
 
-# TODO: Generate a secret
+# Generate a cookie secret/get it from file
+- name: Create cookie signing secret
+  become: true
+  copy:
+    dest: "{{ proxy_config_dir }}/cookie_secret"
+    content: |
+      "{{ lookup('ansible.builtin.password','/dev/null length=30 chars=ascii_lowercase') }}"
+    force: false  # Only set a secret if it doesn't exist
+    mode: 0400
+
+- name: Grab cookie signing secret from target
+  become: true
+  slurp:
+    src: "{{ proxy_config_dir }}/cookie_secret"
+  register: cookie_secret_data_slurped
+- set_fact:
+    cookie_signing_secret: "{{ cookie_secret_data_slurped.content | b64decode }}"
 
 # Template out config file for Traefik
 - name: Create Traefik config file
   template:
     src: "traefik-static.yml.j2"
-    dest: "{{ proxy_config_dir }}/traefik-static.yml"
+    dest: "{{ proxy_config_dir }}/traefik.yml"
+  notify: restart_traefik
+
+# Template out config file for Forward Auth
+- name: Create Forward Auth config file
+  template:
+    src: "forward-auth.ini.j2"
+    dest: "{{ proxy_config_dir }}/forward-auth.ini"
+  notify: restart_traefik
 
 # Template out Compose file
 - name: Create docker-compose file
@@ -26,3 +50,13 @@
   when: skip_launch is not defined
 
 # Launch containers
+- name: Start containers
+  become: True
+  docker_compose:
+    project_src: "{{ proxy_docker_dir }}"
+    state: present
+    project_name: "{{ proxy_compose_project }}"
+  tags:
+    - container_launch
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: skip_launch is not defined
