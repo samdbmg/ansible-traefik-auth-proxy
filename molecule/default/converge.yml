@@ -2,9 +2,34 @@
 - name: Converge
   hosts: all
   vars:
-    proxy_domain: proxy.example.com
+    proxy_domain: ci-dns.samn.co.uk
     proxy_letsencrypt_email: blackhole@samn.co.uk
+    proxy_cert_method: dns
+    proxy_cert_dns_provider: desec
+    proxy_dns_provider_env_vars:
+      DESEC_TOKEN: wLP0n3i5mc0NtyZ1XTI78UQTOfaj
+    proxy_compose_project: traefik_auth_proxy_molecule
+    proxy_auth_provider_env_vars:
+      PROVIDERS_OIDC_ISSUER_URL: http://mock-oidc:8080/default
+      PROVIDERS_OIDC_CLIENT_ID: test
+      PROVIDERS_OIDC_CLIENT_SECRET: test
+    proxy_config_dir: /tmp/traefik_auth_proxy_molecule
+  roles:
+    - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
   tasks:
     - name: "Include samdbmg.traefik_auth_proxy"
       include_role:
         name: "samdbmg.traefik_auth_proxy"
+
+    - name: Launch OIDC mock server
+      community.docker.docker_container:
+        name: traefik_auth_proxy_molecule_oidc
+        image: ghcr.io/navikt/mock-oauth2-server:0.5.1
+        ports:
+          - 8080:8080
+        networks:
+          - name: traefik
+            aliases: mock-oidc
+        env:
+          JSON_CONFIG: '{"interactiveLogin": false}'
+        hostname: mock-oidc

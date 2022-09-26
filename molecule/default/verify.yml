@@ -5,6 +5,121 @@
   hosts: all
   gather_facts: false
   tasks:
-  - name: Example assertion
-    assert:
-      that: true
+    - name: Download LE staging root
+      ansible.builtin.get_url:
+        url: https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x1.pem
+        dest: /tmp/le-staging.pem
+        mode: '0440'
+
+    - name: Start a container hosting demo site
+      community.docker.docker_container:
+        name: authproxy-site-demo
+        image: nginx
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.demo.rule: Host(`demo.ci-dns.samn.co.uk`)
+          traefik.http.services.demo.loadbalancer.server.port: "80"
+          traefik.http.routers.demo.entrypoints: websecure
+          traefik.http.routers.demo.tls.certresolver: default
+        networks:
+          - name: traefik
+
+    # Check demo site reachable
+    - name: Check the static demo site is reachable
+      ansible.builtin.uri:
+        url: https://demo.ci-dns.samn.co.uk
+        validate_certs: true
+        ca_path: /tmp/le-staging.pem
+        return_content: true
+      register: public_site
+      failed_when: '"<h1>Welcome to nginx!</h1>" not in public_site.content'
+      retries: 10
+      delay: 5
+      until: public_site is not failed
+
+    - name: Start a container hosting secure sites
+      community.docker.docker_container:
+        name: authproxy-site-secure
+        image: nginx
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.secure.rule: Host(`secure.ci-dns.samn.co.uk`)
+          traefik.http.services.secure.loadbalancer.server.port: "80"
+          traefik.http.routers.secure.entrypoints: websecure
+          traefik.http.routers.secure.tls.certresolver: default
+          traefik.http.routers.secure.middlewares: traefik-forward-auth
+        networks:
+          - name: traefik
+
+    - name: Start another container hosting secure sites
+      community.docker.docker_container:
+        name: authproxy-site-secure-two
+        image: nginx
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.secure-two.rule: Host(`secure-two.ci-dns.samn.co.uk`)
+          traefik.http.services.secure-two.loadbalancer.server.port: "80"
+          traefik.http.routers.secure-two.entrypoints: websecure
+          traefik.http.routers.secure-two.tls.certresolver: default
+          traefik.http.routers.secure-two.middlewares: traefik-forward-auth
+        networks:
+          - name: traefik
+
+    - name: Check the secure site is unreachable by default
+      ansible.builtin.uri:
+        url: https://secure.ci-dns.samn.co.uk
+        validate_certs: true
+        ca_path: /tmp/le-staging.pem
+        return_content: true
+        follow_redirects: false
+      register: secure_site_initial_access
+      # Report failure if it works - this isn't supposed to be accessible!
+      failed_when: secure_site_initial_access.status != 307 and secure_site_initial_access.status != 302
+      retries: 10
+      delay: 5
+      until: secure_site_initial_access.status != -1
+
+    - name: Follow redirect to auth
+      ansible.builtin.uri:
+        url: "{{ secure_site_initial_access.location }}"
+        return_content: true
+        follow_redirects: false
+      register: secure_site_auth_redirect
+      failed_when: secure_site_auth_redirect.status != 302 and secure_site_auth_redirect.status != 307
+
+    - name: Follow redirect back with code and CSRF cookie
+      ansible.builtin.uri:
+        url: "{{ secure_site_auth_redirect.location }}"
+        ca_path: /tmp/le-staging.pem
+        return_content: true
+        follow_redirects: false
+        headers:
+          Cookie: "{{ secure_site_initial_access.set_cookie }}"
+      register: secure_site_code
+      failed_when: secure_site_code.status != 302 and secure_site_code.status != 307
+
+    - name: Visit secure site with auth cookie
+      ansible.builtin.uri:
+        url: "{{ secure_site_code.location }}"
+        ca_path: /tmp/le-staging.pem
+        return_content: true
+        follow_redirects: false
+        headers:
+          Cookie: "{{ secure_site_code.set_cookie }}"
+      register: secure_site_access
+      failed_when: '"<h1>Welcome to nginx!</h1>" not in secure_site_access.content'
+
+    - name: Visit other secure site with auth cookie to check SSO works
+      ansible.builtin.uri:
+        url: https://secure-two.ci-dns.samn.co.uk
+        ca_path: /tmp/le-staging.pem
+        return_content: true
+        follow_redirects: false
+        headers:
+          Cookie: "{{ secure_site_code.set_cookie }}"
+      register: secure_site_two
+
+      retries: 10
+      delay: 5
+      until: secure_site_two.status != -1
+      failed_when: '"<h1>Welcome to nginx!</h1>" not in secure_site_two.content'

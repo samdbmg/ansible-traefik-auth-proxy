@@ -3,6 +3,10 @@
   hosts: all
   become: true
   tasks:
+    - name: Update apt cache (Ubuntu)
+      ansible.builtin.apt:
+        update_cache: true
+      when: ansible_distribution == "Ubuntu"
     # Apply the Docker socket workaround in https://github.com/ansible-community/molecule/issues/1568
     - name: Link the docker socket
       raw: ln -s /tmp/docker.sock /var/run/docker.sock
