@@ -17,10 +17,6 @@
   roles:
     - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
   tasks:
-    - name: "Include samdbmg.traefik_auth_proxy"
-      include_role:
-        name: "samdbmg.traefik_auth_proxy"
-
     - name: Launch OIDC mock server
       community.docker.docker_container:
         name: traefik_auth_proxy_molecule_oidc

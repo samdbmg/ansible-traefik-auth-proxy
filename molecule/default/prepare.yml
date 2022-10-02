@@ -9,10 +9,13 @@
       when: ansible_distribution == "Ubuntu"
     # Apply the Docker socket workaround in https://github.com/ansible-community/molecule/issues/1568
     - name: Link the docker socket
-      raw: ln -s /tmp/docker.sock /var/run/docker.sock
+      ansible.builtin.file:
+        src: /tmp/docker.sock
+        dest: /var/run/docker.sock
+        state: link
       changed_when: false
     - name: Install the docker module
-      pip:
+      ansible.builtin.pip:
         name:
           - docker
           - docker-compose
