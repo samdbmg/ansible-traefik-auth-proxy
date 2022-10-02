@@ -1,0 +1,76 @@
+version: '3'
+
+services:
+  config-generator:
+    # image: samdbmg/traefik_auth_proxy_config
+    build:
+      context: ..  # Context is repo root, to include the entire role
+      dockerfile: docker-only/config-generator/Dockerfile  # Relative to build context
+    volumes:
+      - "./traefik-config:/etc/traefik:rw"
+    env_file:
+      - .env
+
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.5
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+    volumes:
+      - "./traefik-config:/etc/traefik:ro"
+      - "certs:/certs:rw"
+    restart: always
+    depends_on:
+      - docker-socket-proxy
+      - forward-auth
+    networks:
+      - docker-socket
+      - traefik
+      - default
+    extra_hosts:
+      host.docker.internal: host-gateway
+    env_file:
+      - .env
+
+  forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    command: --config /etc/traefik/forward-auth.ini
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik-forward-auth.rule=Host(`auth.${PROXY_DOMAIN}`)
+      - traefik.http.routers.traefik-forward-auth.tls.certresolver=default
+      - traefik.http.routers.traefik-forward-auth.middlewares=traefik-forward-auth
+      - traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://forward-auth:4181
+      - traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User
+      - traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181
+    volumes:
+      - "./traefik-config:/etc/traefik:ro"
+      - cookie_secret:/etc/traefik-forward-auth:ro
+    restart: unless-stopped
+    env_file:
+      - .env
+    extra_hosts:
+      host.docker.internal: host-gateway
+    networks:
+      - traefik
+
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy
+    networks:
+      - docker-socket
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - CONTAINERS=1
+    restart: always
+
+volumes:
+  cookie_secret:
+  certs:
+
+networks:
+  docker-socket:
+  traefik:
+    name: traefik

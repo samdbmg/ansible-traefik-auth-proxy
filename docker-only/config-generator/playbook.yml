@@ -1,0 +1,17 @@
+---
+- name: Generate config file
+  hosts: localhost
+  vars:
+    # Note: This should include all the variables in default/main.yml
+    proxy_domain: "{{ lookup('ansible.builtin.env', 'PROXY_DOMAIN', default=Undefined) }}"
+    proxy_letsencrypt_email: "{{ lookup('ansible.builtin.env', 'PROXY_LETSENCRYPT_EMAIL', default=Undefined) }}"
+    proxy_cert_method: "{{ lookup('ansible.builtin.env', 'PROXY_CERT_METHOD', default='http') }}"
+    proxy_cert_dns_provider: "{{ lookup('ansible.builtin.env', 'PROXY_CERT_DNS_PROVIDER') }}"
+    proxy_dns_provider_env_vars: "{{ lookup('ansible.builtin.env', 'PROXY_DNS_PROVIDR_ENV_VARS', default='[]') }}"
+
+    proxy_config_dir: /etc/traefik
+    skip_launch: true
+  tasks:
+    - name: "Include traefik_auth_proxy"
+      ansible.builtin.include_role:
+        name: "traefik_auth_proxy"
