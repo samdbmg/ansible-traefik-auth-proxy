@@ -55,11 +55,12 @@ jobs:
 
       - name: Create instances, prepare environment
         run: molecule create && molecule prepare
-      - name: Apply the role to the instance, run tests
+      - name: Apply the role to the instance
         run: molecule converge
       - name: Check the role is idempotent
         run: molecule idempotence
       - name: Run tests
         run: molecule verify
       - name: Clean up instance
+        if: always()
         run: molecule cleanup && molecule destroy
