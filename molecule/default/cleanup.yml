@@ -31,7 +31,8 @@
       # Ignore errors because the container doesn't exist
       ignore_unreachable: true
 
-    - name: Remove config files from mounted directory
+    # Note that Ansible cannot empty a directory without removing it (or iterating the contents), so we have to use the shell
+    - name: Remove config files from mounted directory  # noqa no-changed-when
       ansible.builtin.shell: /bin/rm -rf /tmp/traefik_auth_proxy_molecule/*
       args:
         warn: false

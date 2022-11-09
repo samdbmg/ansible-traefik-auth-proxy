@@ -14,9 +14,11 @@
       PROVIDERS_OIDC_CLIENT_ID: test
       PROVIDERS_OIDC_CLIENT_SECRET: test
     proxy_config_dir: /tmp/traefik_auth_proxy_molecule
-  roles:
-    - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
   tasks:
+    - name: "Include role"
+      ansible.builtin.include_role:
+        # Apply the role from the top-level directory name rather than hardcoding
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
     - name: Launch OIDC mock server
       community.docker.docker_container:
         name: traefik_auth_proxy_molecule_oidc
