@@ -29,5 +29,9 @@ platforms:
       mock-oidc: 127.0.0.1
 provisioner:
   name: ansible
+  env:
+    BASE_DOMAIN: ${BASE_DOMAIN:-ci-dns.samn.co.uk}
+    RUN_TYPE: ${RUN_TYPE:-local}
+    DESEC_TOKEN: ${DESEC_TOKEN:-wLP0n3i5mc0NtyZ1XTI78UQTOfaj}
 scenario:
   name: default

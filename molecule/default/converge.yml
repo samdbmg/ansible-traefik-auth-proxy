@@ -2,19 +2,30 @@
 - name: Converge
   hosts: all
   vars:
-    proxy_domain: ci-dns.samn.co.uk
     proxy_letsencrypt_email: blackhole@samn.co.uk
     proxy_cert_method: dns
     proxy_cert_dns_provider: desec
     proxy_dns_provider_env_vars:
-      DESEC_TOKEN: wLP0n3i5mc0NtyZ1XTI78UQTOfaj
+      DESEC_TOKEN: "{{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }}"
     proxy_compose_project: traefik_auth_proxy_molecule
     proxy_auth_provider_env_vars:
       PROVIDERS_OIDC_ISSUER_URL: http://mock-oidc:8080/default
       PROVIDERS_OIDC_CLIENT_ID: test
       PROVIDERS_OIDC_CLIENT_SECRET: test
     proxy_config_dir: /tmp/traefik_auth_proxy_molecule
+    base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
   tasks:
+    - name: Grab domain name from target
+      become: true
+      ansible.builtin.slurp:
+        src: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
+      register: molecule_domain_data_slurped
+
+    - name: Set domain fact
+      ansible.builtin.set_fact:
+        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode }}"
+        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
+
     - name: "Include role"
       ansible.builtin.include_role:
         # Apply the role from the top-level directory name rather than hardcoding
