@@ -35,10 +35,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - distro: ubuntu1804
           - distro: ubuntu2004
-          - distro: centos7
-          - distro: rockylinux8
     env:
       PY_COLORS: '1'
       ANSIBLE_FORCE_COLOR: '1'
