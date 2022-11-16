@@ -20,7 +20,7 @@ providers:
     endpoint: "tcp://docker-socket-proxy:2375"
     exposedByDefault: false
   file:
-    directory: {{ proxy_config_dir }}
+    directory: /etc/traefik/dynamic
 
 certificatesResolvers:
   default:

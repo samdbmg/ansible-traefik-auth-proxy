@@ -9,6 +9,7 @@
     mode: 0755
   loop:
     - "{{ proxy_config_dir }}"
+    - "{{ proxy_config_dir }}/dynamic"
     - "{{ proxy_docker_dir }}"
 
 # Generate a cookie secret/get it from file
