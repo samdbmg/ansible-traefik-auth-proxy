@@ -1,0 +1,50 @@
+---
+# Generate a random domain to avoid conflicts with other CI runs
+- name: Create domain name
+  ansible.builtin.template:
+    src: "domain_name.j2"
+    dest: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
+    force: false  # Only set a random domain name if there isn't one
+    mode: 0400
+
+- name: Grab domain name from target
+  ansible.builtin.slurp:
+    src: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
+  register: molecule_domain_data_slurped
+
+- name: Set domain fact
+  ansible.builtin.set_fact:
+    proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode | trim }}"
+    proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
+
+- name: Note the domain in use
+  ansible.builtin.debug:
+    msg: Using domain {{ proxy_domain }} for certificates
+
+- name: Create DNS entries for temporary domain
+  community.general.cloudflare_dns:
+    zone: "{{ base_domain }}"
+    record: "{{ item }}"
+    type: A
+    value: 127.0.0.1
+  delegate_to: localhost
+  become: false
+  loop:
+    - auth.{{ proxy_temp_name }}
+    - demo.{{ proxy_temp_name }}
+    - dashboard.{{ proxy_temp_name }}
+    - secure.{{ proxy_temp_name }}
+    - secure-two.{{ proxy_temp_name }}
+
+- name: Wait for DNS propagation
+  debug:
+    msg: Waiting for {{ item }} to appear in DNS
+  until: lookup('community.general.dig', item) == "127.0.0.1"
+  retries: 30
+  delay: 20
+  loop:
+    - auth.{{ proxy_domain }}
+    - demo.{{ proxy_domain }}
+    - dashboard.{{ proxy_domain }}
+    - secure.{{ proxy_domain }}
+    - secure-two.{{ proxy_domain }}

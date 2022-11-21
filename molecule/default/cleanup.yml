@@ -2,56 +2,20 @@
 - name: Cleanup DNS entries
   hosts: all
   gather_facts: false
+  tags:
+    - cleanup
   vars:
     base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
+    temp_work_dir: "{{ lookup('ansible.builtin.env', 'TEMP_WORK_DIR') }}"
+    desec_script: desec.py
   tasks:
-    - name: Check a temporary domain was created
-      ansible.builtin.stat:
-        path: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
-      register: domain_file_exists
-      delegate_to: localhost
-
-    - name: End play if no temporary domain
-      ansible.builtin.meta: end_play
-      when: not domain_file_exists.stat.exists
-      delegate_to: localhost
-
-    - name: Grab domain name from target
-      become: true
-      ansible.builtin.slurp:
-        src: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
-      register: molecule_domain_data_slurped
-
-    - name: Set domain fact
-      ansible.builtin.set_fact:
-        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
-
-    - name: List DNS entries
-      ansible.builtin.command:
-        cmd: python3 cf-list-records.py {{ base_domain }} {{ proxy_domain }} -s
-      register: dns_entry_list
-      delegate_to: localhost
-      changed_when: false
-
-    - name: Set fact with DNS entries
-      ansible.builtin.set_fact:
-        dns_entries: "{{ dns_entry_list.stdout_lines }}"
-
-    - name: Remove DNS entries
-      community.general.cloudflare_dns:
-        zone: "{{ base_domain }}"
-        record: "{{ item }}"
-        type: A
-        value: 127.0.0.1
-        state: absent
-      loop: "{{ dns_entries }}"
-      delegate_to: localhost
+    - name: Import cleanup tasks
+      ansible.builtin.import_tasks: tasks/cleanup-dns.yml
 
 - name: Cleanup containers
   hosts: all
   gather_facts: false
   tasks:
-
     - name: Stop demo containers
       community.docker.docker_container:
         name: "authproxy-site-{{ item }}"

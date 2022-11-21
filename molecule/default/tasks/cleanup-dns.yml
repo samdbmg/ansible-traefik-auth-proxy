@@ -1,0 +1,43 @@
+# Cleanup steps required for DNS setup - shared with docker-only variant
+---
+
+- name: Check a temporary domain was created
+  ansible.builtin.stat:
+    path: "{{ temp_work_dir }}/molecule_domain"
+  register: domain_file_exists
+  delegate_to: localhost
+
+- name: End play if no temporary domain
+  ansible.builtin.meta: end_play
+  when: not domain_file_exists.stat.exists
+  delegate_to: localhost
+
+- name: Grab domain name from target
+  ansible.builtin.slurp:
+    src: "{{ temp_work_dir }}/molecule_domain"
+  register: molecule_domain_data_slurped
+
+- name: Set domain fact
+  ansible.builtin.set_fact:
+    proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
+
+- name: List DNS entries
+  ansible.builtin.command:
+    cmd: python3 cf-list-records.py {{ base_domain }} {{ proxy_domain }} -s
+  register: dns_entry_list
+  delegate_to: localhost
+  changed_when: false
+
+- name: Set fact with DNS entries
+  ansible.builtin.set_fact:
+    dns_entries: "{{ dns_entry_list.stdout_lines }}"
+
+- name: Remove DNS entries
+  community.general.cloudflare_dns:
+    zone: "{{ base_domain }}"
+    record: "{{ item }}"
+    type: A
+    value: 127.0.0.1
+    state: absent
+  loop: "{{ dns_entries }}"
+  delegate_to: localhost

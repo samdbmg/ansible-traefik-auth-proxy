@@ -4,13 +4,15 @@
 - name: Verify
   hosts: all
   gather_facts: false
+  tags:
+    - verify
   vars:
     base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
+    temp_work_dir: "{{ lookup('ansible.builtin.env', 'TEMP_WORK_DIR') }}"
   tasks:
     - name: Grab domain name from target
-      become: true
       ansible.builtin.slurp:
-        src: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
+        src: "{{ temp_work_dir }}/molecule_domain"
       register: molecule_domain_data_slurped
 
     - name: Set domain fact
@@ -21,8 +23,8 @@
     - name: Download LE staging root
       ansible.builtin.get_url:
         url: https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x1.pem
-        dest: /tmp/le-staging.pem
-        mode: '0440'
+        dest: "{{ temp_work_dir }}/le-staging.pem"
+        mode: '0640'
 
     - name: Start a container hosting demo site
       community.docker.docker_container:
@@ -43,7 +45,7 @@
       ansible.builtin.uri:
         url: https://demo.{{ proxy_domain }}
         validate_certs: true
-        ca_path: /tmp/le-staging.pem
+        ca_path: "{{ temp_work_dir }}/le-staging.pem"
         return_content: true
       register: public_site
       failed_when: '"<h1>Welcome to nginx!</h1>" not in public_site.content'
@@ -83,7 +85,7 @@
       ansible.builtin.uri:
         url: https://secure.{{ proxy_domain }}
         validate_certs: true
-        ca_path: /tmp/le-staging.pem
+        ca_path: "{{ temp_work_dir }}/le-staging.pem"
         return_content: true
         follow_redirects: false
       register: secure_site_initial_access
@@ -104,7 +106,7 @@
     - name: Follow redirect back with code and CSRF cookie
       ansible.builtin.uri:
         url: "{{ secure_site_auth_redirect.location }}"
-        ca_path: /tmp/le-staging.pem
+        ca_path: "{{ temp_work_dir }}/le-staging.pem"
         return_content: true
         follow_redirects: false
         headers:
@@ -118,7 +120,7 @@
     - name: Visit secure site with auth cookie
       ansible.builtin.uri:
         url: "{{ secure_site_code.location }}"
-        ca_path: /tmp/le-staging.pem
+        ca_path: "{{ temp_work_dir }}/le-staging.pem"
         return_content: true
         follow_redirects: false
         headers:
@@ -129,7 +131,7 @@
     - name: Visit other secure site with auth cookie to check SSO works
       ansible.builtin.uri:
         url: https://secure-two.{{ proxy_domain }}
-        ca_path: /tmp/le-staging.pem
+        ca_path: "{{ temp_work_dir }}/le-staging.pem"
         return_content: true
         follow_redirects: false
         headers:

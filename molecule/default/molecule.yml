@@ -32,5 +32,6 @@ provisioner:
     BASE_DOMAIN: ${BASE_DOMAIN:-samdbmg.uk}
     RUN_TYPE: ${RUN_TYPE:-local}
     DESEC_TOKEN: ${DESEC_TOKEN}
+    TEMP_WORK_DIR: "/tmp/traefik_auth_proxy_molecule"
 scenario:
   name: default
