@@ -7,6 +7,9 @@
 # Domain this proxy serves subdomains of
 # proxy_domain: (REQUIRED)
 
+# Name of the network created in Docker
+proxy_network_name: traefik
+
 # Domain on which the dashboard appears
 proxy_dashboard_domain: "dashboard.{{ proxy_domain }}"
 

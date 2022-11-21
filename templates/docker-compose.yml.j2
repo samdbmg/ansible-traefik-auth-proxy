@@ -18,7 +18,7 @@ services:
 {% endif %}
     networks:
       - docker-socket
-      - traefik
+      - {{ proxy_network_name }}
       - default
     extra_hosts:
       host.docker.internal: host-gateway
@@ -40,7 +40,7 @@ services:
     volumes:
       - "{{ proxy_config_dir }}:/etc/traefik:ro"
     networks:
-      - traefik
+      - {{ proxy_network_name }}
 {% endif %}
 
 
@@ -58,4 +58,4 @@ services:
 networks:
   docker-socket:
   traefik:
-    name: traefik
+    name: {{ proxy_network_name }}
