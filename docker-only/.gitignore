@@ -1,2 +1,5 @@
 .env
 traefik-config
+
+le-staging.pem
+molecule_domain

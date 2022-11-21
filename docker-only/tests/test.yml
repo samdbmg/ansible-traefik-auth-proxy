@@ -1,0 +1,129 @@
+---
+# Ansible playbook to test the docker-only version works
+- name: Set up working directory
+  hosts: all
+  tags:
+    - facts
+  tasks:
+    - name: Set build dir fact
+      ansible.builtin.set_fact:
+        temp_work_dir: "{{ playbook_dir }}/.."
+        run_type: "{{ lookup('ansible.builtin.env', 'RUN_TYPE') }}"
+        base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
+        desec_token: "{{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }}"
+        desec_script: "{{ playbook_dir }}/../../molecule/default/desec.py"
+
+- name: Prepare DNS entries
+  hosts: all
+  tags:
+    - prepare
+  tasks:
+    - name: Include DNS setup
+      ansible.builtin.import_tasks: ../../molecule/default/tasks/prepare-dns.yml
+
+- name: Launch containers
+  hosts: all
+  tags:
+    - launch
+  tasks:
+    - name: Grab domain name from target
+      ansible.builtin.slurp:
+        src: "{{ temp_work_dir }}/molecule_domain"
+      register: molecule_domain_data_slurped
+
+    - name: Set domain fact
+      ansible.builtin.set_fact:
+        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode }}"
+        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
+
+    - name: Template out env file
+      ansible.builtin.template:
+        src: env.j2
+        dest: "{{ playbook_dir }}/../.env"
+
+    - name: Create config directory
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/../traefik-config"
+        state: directory
+
+    - name: Launch Compose containers
+      community.docker.docker_compose:
+        project_src: "{{ playbook_dir }}/.."
+        state: present
+        project_name: "traefik_auth_proxy_compose"
+
+    - name: Launch OIDC mock server
+      community.docker.docker_container:
+        name: traefik_auth_proxy_compose_oidc
+        image: ghcr.io/navikt/mock-oauth2-server:0.5.1
+        ports:
+          - 8080:8080
+        networks:
+          - name: traefik
+            aliases: mock-oidc
+        env:
+          JSON_CONFIG: '{"interactiveLogin": false}'
+        hostname: mock-oidc
+
+    - name: Wait for some DNS propagation and cert issuance
+      ansible.builtin.wait_for:
+        timeout: 30
+      delegate_to: localhost
+
+    - name: Restart proxy now OIDC server is up
+      community.docker.docker_compose:
+        project_src: "{{ playbook_dir }}/.."
+        project_name: "traefik_auth_proxy_compose"
+        services:
+          - reverse-proxy
+          - forward-auth
+        restarted: true
+
+- name: Run tests
+  ansible.builtin.import_playbook: ../../molecule/default/verify.yml
+
+- name: Clean up
+  hosts: all
+  tags:
+    - cleanup
+  tasks:
+    - name: Stop demo containers
+      community.docker.docker_container:
+        name: "authproxy-site-{{ item }}"
+        state: absent
+      loop:
+        - demo
+        - secure
+        - secure-two
+
+    - name: Stop OIDC mock server
+      community.docker.docker_container:
+        name: traefik_auth_proxy_compose_oidc
+        state: absent
+      delegate_to: localhost
+
+    - name: Stop Compose containers
+      community.docker.docker_compose:
+        project_src: "{{ playbook_dir }}/.."
+        state: absent
+        remove_volumes: true
+        project_name: "traefik_auth_proxy_compose"
+
+    - name: Include DNS cleanup tasks
+      ansible.builtin.import_tasks: ../../molecule/default/tasks/cleanup-dns.yml
+
+- name: Clean up temp files
+  hosts: all
+  tags:
+    - cleanup
+    - cleanup-files
+  tasks:
+    - name: Remove temp files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ temp_work_dir }}/molecule_domain"
+        - "{{ temp_work_dir }}/le-staging.pem"
+        - "{{ playbook_dir }}/../.env"
+        - "{{ playbook_dir }}/../traefik-config"

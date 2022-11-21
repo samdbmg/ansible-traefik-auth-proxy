@@ -1,5 +1,5 @@
 ---
-name: CI with Molecule
+name: CI
 "on":
   push:
   pull_request:
@@ -32,11 +32,11 @@ jobs:
       - name: Lint code.
         run: |
             yamllint .
-            ansible-lint .
-  test:
-    name: Test
+            # Ignore role name when linting
+            ansible-lint -x 'role-name'
+  test-molecule:
+    name: Test with Molecule
     runs-on: ubuntu-latest
-
     env:
       PY_COLORS: '1'
       ANSIBLE_FORCE_COLOR: '1'
@@ -75,3 +75,44 @@ jobs:
       - name: Clean up instance
         if: always()
         run: molecule cleanup && molecule destroy
+
+  dockeronly:
+    name: Docker Only Mode
+    runs-on: ubuntu-latest
+    env:
+      PY_COLORS: '1'
+      ANSIBLE_FORCE_COLOR: '1'
+      RUN_TYPE: ci-do
+      CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+      BASE_DOMAIN: tap-ci.samdbmg.uk
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Setup Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+        id: setup-python
+
+      - name: Install deps
+        run: pip3 install ansible docker docker-compose
+
+      - name: Resolve mock OIDC server to localhost
+        run: echo "127.0.0.1 mock-oidc" | sudo tee -a /etc/hosts
+
+      - name: Run test playbook
+        run: ansible-playbook -i tests/inventory tests/test.yml --skip-tags cleanup -e ansible_python_interpreter='${{ steps.setup-python.outputs.python-path }}'
+        working-directory: ./docker-only
+
+      - name: Print proxy logs for debugging
+        if: failure()
+        run: |
+          docker ps
+          docker-compose -p traefik_auth_proxy_compose logs
+        working-directory: ./docker-only
+
+      - name: Clean up afterwards
+        if: always()
+        run: ansible-playbook -i tests/inventory tests/test.yml --tags facts,cleanup -e ansible_python_interpreter='${{ steps.setup-python.outputs.python-path }}'
+        working-directory: ./docker-only
