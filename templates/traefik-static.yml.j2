@@ -41,18 +41,6 @@ certificatesResolvers:
 serversTransport:
   insecureSkipVerify: true
 
-# Configure the dashboard on the default dns name, and apply auth0
-http:
-  routers:
-    dashboard:
-      rule: Host(`{{ proxy_dashboard_domain | trim('.') }}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`) || PathPrefix(`/_oauth`))
-      entryPoints:
-        - websecure
-      service: api@internal
-      tls:
-        certResolver: default
-      middlewares:
-        - "traefik-forward-auth@docker"
 
 
 {% if proxy_traefik_pilot_token is defined %}

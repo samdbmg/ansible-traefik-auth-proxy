@@ -39,6 +39,14 @@
     mode: 0640
   notify: restart_traefik
 
+# Template out config file for dashboard
+- name: Create dashboard config file
+  ansible.builtin.template:
+    src: "traefik-dashboard.yml.j2"
+    dest: "{{ proxy_config_dir }}/dynamic/dashboard.yml"
+    mode: 0640
+  notify: restart_traefik
+
 # Template out config file for Forward Auth
 - name: Create Forward Auth config file
   ansible.builtin.template:
