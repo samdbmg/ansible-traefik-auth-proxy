@@ -40,10 +40,3 @@ certificatesResolvers:
 # Don't verify TLS on backends - they'll be self-signed anyway
 serversTransport:
   insecureSkipVerify: true
-
-
-
-{% if proxy_traefik_pilot_token is defined %}
-pilot:
-  token: "{{ proxy_traefik_pilot_token }}"
-{% endif %}

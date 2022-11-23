@@ -57,9 +57,6 @@ proxy_auth_provider_env_vars: {}
 # Set to true to enable HTTP endpoints with traefik (rather than just redirecting to https)
 proxy_requires_http: false
 
-# If you want to use traefik pilot to monitor your proxy, set the token here
-# proxy_traefik_pilot_token:
-
 # Configure the role itself: there are unlikely to need changing
 proxy_config_dir: /etc/traefik_proxy
 proxy_docker_dir: /etc/traefik_proxy
