@@ -68,3 +68,7 @@ proxy_dns_servers:
 proxy_auth_domain: "auth.{{ proxy_domain }}"
 
 proxy_compose_project: traefik_auth_proxy
+
+# Versions of containers
+proxy_traefik_label: v2.9
+proxy_forward_auth_label: latest

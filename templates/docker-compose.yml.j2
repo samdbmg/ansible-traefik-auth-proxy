@@ -3,7 +3,7 @@ version: '3.5'
 services:
   reverse-proxy:
     # The official v2 Traefik docker image
-    image: traefik:v2.5
+    image: traefik:{{ proxy_traefik_label }}
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
@@ -25,7 +25,7 @@ services:
     environment: {{ proxy_dns_provider_env_vars }}
 {% if proxy_enable_auth %}
   forward-auth:
-    image: thomseddon/traefik-forward-auth:2
+    image: thomseddon/traefik-forward-auth:{{ proxy_forward_auth_label }}
     environment: {{ proxy_auth_provider_env_vars }}
     command: --config /etc/traefik/forward-auth.ini
     labels:
