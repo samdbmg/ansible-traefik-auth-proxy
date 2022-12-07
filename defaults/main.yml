@@ -57,6 +57,9 @@ proxy_auth_provider_env_vars: {}
 # Set to true to enable HTTP endpoints with traefik (rather than just redirecting to https)
 proxy_requires_http: false
 
+# Extra auth domains to issue certs for, in addition to the default (e.g. for complex reverse proxy setups)
+proxy_extra_auth_domains: []
+
 # Configure the role itself: there are unlikely to need changing
 proxy_config_dir: /etc/traefik_proxy
 proxy_docker_dir: /etc/traefik_proxy

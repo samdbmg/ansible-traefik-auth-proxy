@@ -25,6 +25,8 @@
       ansible.builtin.set_fact:
         proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode }}"
         proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
+        proxy_extra_auth_domains:
+          - "auth.extra.{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
 
     - name: "Include role"
       ansible.builtin.include_role:

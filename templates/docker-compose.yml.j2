@@ -30,7 +30,7 @@ services:
     command: --config /etc/traefik/forward-auth.ini
     labels:
       - traefik.enable=true
-      - traefik.http.routers.traefik-forward-auth.rule=Host(`{{ proxy_auth_domain }}`)
+      - traefik.http.routers.traefik-forward-auth.rule=Host(`{{ proxy_auth_domain }}`){% for extra_auth_domain in proxy_extra_auth_domains %} || Host(`{{ extra_auth_domain }}`) {% endfor +%}
       - traefik.http.routers.traefik-forward-auth.tls.certresolver=default
       - traefik.http.routers.traefik-forward-auth.middlewares=traefik-forward-auth
       - traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://forward-auth:4181
