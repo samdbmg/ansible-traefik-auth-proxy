@@ -34,6 +34,7 @@
           traefik.http.services.demo.loadbalancer.server.port: "80"
           traefik.http.routers.demo.entrypoints: websecure
           traefik.http.routers.demo.tls.certresolver: default
+          traefik.http.routers.middlewares: "hsts-headers@file"
         networks:
           - name: traefik
 
@@ -60,7 +61,7 @@
           traefik.http.services.secure.loadbalancer.server.port: "80"
           traefik.http.routers.secure.entrypoints: websecure
           traefik.http.routers.secure.tls.certresolver: default
-          traefik.http.routers.secure.middlewares: traefik-forward-auth
+          traefik.http.routers.secure.middlewares: traefik-forward-auth, hsts-headers@file
         networks:
           - name: traefik
 
@@ -74,7 +75,7 @@
           traefik.http.services.secure-two.loadbalancer.server.port: "80"
           traefik.http.routers.secure-two.entrypoints: websecure
           traefik.http.routers.secure-two.tls.certresolver: default
-          traefik.http.routers.secure-two.middlewares: traefik-forward-auth
+          traefik.http.routers.secure-two.middlewares: traefik-forward-auth, hsts-headers@file
         networks:
           - name: traefik
 
