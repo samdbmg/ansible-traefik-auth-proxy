@@ -11,3 +11,4 @@ http:
         certResolver: default
       middlewares:
         - "traefik-forward-auth@docker"
+        - "hsts-headers@file"
