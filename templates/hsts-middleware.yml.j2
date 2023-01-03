@@ -1,0 +1,19 @@
+---
+# From https://github.com/Khroners/Traefik-with-A-plus-on-SSL-Labs-Headers/blob/fcc7294ebafcc3e546e024a580ddde511ce1fa05/config/config.yml
+http:
+  middlewares:
+    hsts-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        forceStsHeader: true
+        referrerPolicy: same-origin
+        customResponseHeaders:
+          permissions-Policy: vibrate=(self), geolocation=(self), midi=(self), notifications=(self), push=(self), microphone=(), $
+          X-Permitted-Cross-Domain-Policies: none
+          expect-ct: max-age=604800, report-uri="https://oak.ct.letsencrypt.org/2021"

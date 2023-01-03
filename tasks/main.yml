@@ -39,10 +39,21 @@
     mode: 0640
   notify: restart_traefik
 
-# Template out config file for dashboard
+# Template out dynamic configs
+- name: Create dynamic config files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ proxy_config_dir }}/dynamic/{{ item }}"
+    mode: 0640
+  notify: restart_traefik
+  loop:
+    - tls.yml
+    - hsts-middleware.yml
+
+# Template out dashboard if enabled
 - name: Create dashboard config file
   ansible.builtin.template:
-    src: "traefik-dashboard.yml.j2"
+    src: "dashboard.yml.j2"
     dest: "{{ proxy_config_dir }}/dynamic/dashboard.yml"
     mode: 0640
   notify: restart_traefik
