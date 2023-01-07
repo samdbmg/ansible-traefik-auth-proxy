@@ -46,11 +46,17 @@
         path: "{{ playbook_dir }}/../traefik-config"
         state: directory
 
+    - name: Generate config file
+      ansible.builtin.shell:
+        cmd: docker-compose -p traefik_auth_proxy_compose run config-generator
+        chdir: "{{ playbook_dir }}/.."
+
     - name: Launch Compose containers
       community.docker.docker_compose:
         project_src: "{{ playbook_dir }}/.."
         state: present
         project_name: "traefik_auth_proxy_compose"
+        services: reverse-proxy
 
     - name: Launch OIDC mock server
       community.docker.docker_container:
