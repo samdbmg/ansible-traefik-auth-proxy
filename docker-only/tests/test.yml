@@ -120,6 +120,7 @@
 
 - name: Clean up temp files
   hosts: all
+  become: true
   tags:
     - cleanup
     - cleanup-files
