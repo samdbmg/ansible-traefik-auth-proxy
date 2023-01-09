@@ -7,17 +7,17 @@
 # Domain this proxy serves subdomains of
 # proxy_domain: (REQUIRED)
 
+# Should the forward-auth proxy be enabled?
+proxy_enable_auth: true
+
+# Should the production LetsEncrypt be used (instead of staging)
+proxy_use_le_prod: false
+
 # Name of the network created in Docker
 proxy_network_name: traefik
 
 # Domain on which the dashboard appears
 proxy_dashboard_domain: "dashboard.{{ proxy_domain }}"
-
-# Should the production LetsEncrypt be used (instead of staging)
-proxy_use_le_prod: false
-
-# Should the forward-auth proxy be enabled?
-proxy_enable_auth: true
 
 # Use HTTP or DNS to issue TLS certificates
 proxy_cert_method: http  # dns is the other option
@@ -31,7 +31,7 @@ proxy_dns_provider_env_vars: []
 # Chosen OAuth provider
 proxy_oauth_provider: oidc
 
-# If using OAuth here, figure out the set of config options needed for your environment from
+# Figure out the set of config options needed for your environment from
 # https://github.com/thomseddon/traefik-forward-auth/wiki/Provider-Setup, then convert them to their
 # environment variable equivalents and set them here (remove the {} line first)
 proxy_auth_provider_env_vars: {}
