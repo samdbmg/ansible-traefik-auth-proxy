@@ -46,6 +46,7 @@
     dest: "{{ proxy_config_dir }}/dynamic/dashboard.yml"
     mode: 0640
   notify: restart_traefik
+  when: proxy_dashboard_domain != '' and proxy_enable_auth
 
 # Template out config file for Forward Auth
 - name: Create Forward Auth config file
