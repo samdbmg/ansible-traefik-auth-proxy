@@ -13,6 +13,11 @@
         desec_token: "{{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }}"
         desec_script: "{{ playbook_dir }}/../../molecule/default/desec.py"
 
+    - name: Check env vars were set
+      fail:
+        msg: A required environment variable (one of RUN_TYPE, BASE_DOMAIN or DESEC_TOKEN) was not set
+      when: run_type == "" or base_domain == "" or desec_token == ""
+
 - name: Prepare DNS entries
   hosts: all
   tags:
