@@ -31,3 +31,38 @@ jobs:
         uses: robertdebock/galaxy-action@1.1.0
         with:
           galaxy_api_key: ${{ secrets.galaxy_api_key }}
+
+  push-config-generator:
+    name: Push config-generator image
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      # Get the container image
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: ci.yml
+          workflow_conclusion: success
+          branch: main
+          name: config-generator
+          path: /tmp
+
+      - name: Load Docker image
+        run: docker load --input /tmp/config-generator.tar
+
+      - name: Get datetime for tag
+        uses: srfrnk/current-time@master
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHHmmSS
+
+      - name: Build and push image
+        uses: docker/build-push-action@v1
+        with:
+          username: samdbmg
+          password: ${{ secrets.DOCKER_TOKEN }}
+          repository: samdbmg/traefik_auth_proxy_config_generator
+          tags: latest, ${{ steps.current-time.outputs.formattedTime }}, ${{ github.event.inputs.version }}
