@@ -7,7 +7,7 @@ services:
       context: ..  # Context is repo root, to include the entire role
       dockerfile: docker-only/config-generator/Dockerfile  # Relative to build context
     volumes:
-      - "./traefik-config:/etc/traefik:rw"
+      - "./traefik-config:/etc/traefik_proxy:rw"
     env_file:
       - .env
 
