@@ -39,20 +39,6 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      # Get the container image
-      - name: Download artifact
-        id: download-artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: ci.yml
-          workflow_conclusion: success
-          branch: main
-          name: config-generator
-          path: /tmp
-
-      - name: Load Docker image
-        run: docker load --input /tmp/config-generator.tar
-
       - name: Get datetime for tag
         uses: srfrnk/current-time@master
         id: current-time

@@ -76,30 +76,6 @@ jobs:
         if: always()
         run: molecule cleanup && molecule destroy
 
-  build-config-generator:
-    name: Build config-generator container
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v1
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker-only/config-generator/Dockerfile
-          tags: local/traefik_auth_proxy_config_generator
-          outputs: type=docker,dest=/tmp/config-generator.tar
-      -
-        name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: config-generator
-          path: /tmp/config-generator.tar
-          retention-days: 1
-
-
   test-dockeronly:
     name: Test Docker Only Mode
     runs-on: ubuntu-latest
