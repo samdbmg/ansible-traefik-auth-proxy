@@ -60,6 +60,14 @@ jobs:
         run: molecule idempotence
       - name: Run tests
         run: molecule verify
+      - name: Print containers and logs for debugging
+        if: failure()
+        run: |
+          docker ps;
+          docker logs traefik_auth_proxy_molecule_reverse-proxy_1;
+          docker logs traefik_auth_proxy_molecule_forward-auth_1;
+          date
+
       - name: Clean up instance
         if: always()
         run: molecule cleanup && molecule destroy
