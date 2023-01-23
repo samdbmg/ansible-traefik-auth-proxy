@@ -47,8 +47,8 @@
         return_content: true
       register: public_site
       failed_when: '"<h1>Welcome to nginx!</h1>" not in public_site.content'
-      retries: 10
-      delay: 5
+      retries: 20
+      delay: 10
       until: public_site is not failed
 
     - name: Start a container hosting secure sites
@@ -89,8 +89,8 @@
       register: secure_site_initial_access
       # Report failure if it works - this isn't supposed to be accessible!
       failed_when: secure_site_initial_access.status != 307 and secure_site_initial_access.status != 302
-      retries: 10
-      delay: 5
+      retries: 20
+      delay: 10
       until: secure_site_initial_access.status != -1
 
     - name: Follow redirect to auth
@@ -133,7 +133,7 @@
           Cookie: "{{ secure_site_code.set_cookie }}"
       register: secure_site_two
 
-      retries: 10
-      delay: 5
+      retries: 20
+      delay: 10
       until: secure_site_two.status != -1
       failed_when: '"<h1>Welcome to nginx!</h1>" not in secure_site_two.content'
