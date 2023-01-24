@@ -32,14 +32,11 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - distro: ubuntu2004
+
     env:
       PY_COLORS: '1'
       ANSIBLE_FORCE_COLOR: '1'
-      MOLECULE_DISTRO: ${{ matrix.distro }}
+      MOLECULE_DISTRO: ubuntu2004
       RUN_TYPE: ci
       DESEC_TOKEN: ${{ secrets.DESEC_TOKEN }}
     steps:
