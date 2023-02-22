@@ -3,6 +3,8 @@ Traefik Auth Proxy
 
 [Ansible Role](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html) to set up the [Traefik](https://traefik.io/traefik/) HTTP reverse proxy running in Docker, along with https://github.com/thomseddon/traefik-forward-auth to allow sites to be secured using OIDC/OAuth2 and provide single sign-on (SSO).
 
+Can also be run in docker-only mode using Docker Compose, see [Docker Only Mode](#docker-only-mode)
+
 Features:
 - Automatic issuing of TLS certificates with LetsEncrypt et al (thanks Traefik!)
 - Easy integration with OpenID Connect & OAuth2 providers or Google for auth (thanks [thomseddon/traefik-forward-auth](https://github.com/thomseddon/traefik-forward-auth))
@@ -95,6 +97,26 @@ docker run --rm \
   -l traefik.http.routers.server.middlewares=traefik-forward-auth \
   nginx
 ```
+
+Docker Only Mode
+----------------
+Sometimes it's useful to have an easy way to set up a private web server somewhere as a one-off demo without having to
+learn, configure and use Ansible. This repo also makes that possible using Docker Compose, with a one-shot container
+to generate the config files.
+
+To use it this way, grab a copy of [docker-only/docker-compose.yml](./docker-only/docker-compose.yml), and create a
+`.env` file in the same directory with variables to configure the role. Each of the variables listed above can be set
+as an environment variable here by converting the name to uppercase (_e.g._ see [docker-only/.env.example] for some
+pointers).
+
+To generate the configuration file and then start the proxy server, run the following:
+```
+export PROXY_DOMAIN=mydomain.example.com
+docker-compose run config-generator
+docker-compose up -d reverse-proxy
+```
+
+Once the config files have been generated once, you shouldn't need to do `docker-compose run config-generator` again.
 
 License
 -------
