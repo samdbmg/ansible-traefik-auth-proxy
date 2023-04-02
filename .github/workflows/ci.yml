@@ -8,6 +8,9 @@ name: CI with Molecule
   schedule:
     - cron: "0 7 * * 4"
 
+defaults:
+ run:
+  working-directory: ./traefik_auth_proxy
 
 jobs:
   lint:
@@ -16,6 +19,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+        with:
+          path: traefik_auth_proxy  # Check out to where Ansible expects to find it
       - name: Setup Python 3
         uses: actions/setup-python@v4
         with:
@@ -27,8 +32,7 @@ jobs:
       - name: Lint code.
         run: |
             yamllint .
-            # Ignore role name when linting
-            ansible-lint -x 'role-name'
+            ansible-lint .
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -42,6 +46,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+        with:
+          path: traefik_auth_proxy  # Check out to where Ansible expects to find it
       - name: Setup Python 3
         uses: actions/setup-python@v4
         with:
