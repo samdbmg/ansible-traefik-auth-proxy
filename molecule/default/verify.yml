@@ -111,6 +111,9 @@
           Cookie: "{{ secure_site_initial_access.set_cookie }}"
       register: secure_site_code
       failed_when: secure_site_code.status != 302 and secure_site_code.status != 307
+      retries: 5
+      delay: 5
+      until: secure_site_code.status != -1
 
     - name: Visit secure site with auth cookie
       ansible.builtin.uri:
