@@ -60,6 +60,7 @@
       loop:
         - auth.{{ proxy_temp_name }}
         - demo.{{ proxy_temp_name }}
+        - dashboard.{{ proxy_temp_name }}
         - secure.{{ proxy_temp_name }}
         - secure-two.{{ proxy_temp_name }}
 
@@ -72,5 +73,6 @@
       loop:
         - auth.{{ proxy_domain }}
         - demo.{{ proxy_domain }}
+        - dashboard.{{ proxy_domain }}
         - secure.{{ proxy_domain }}
         - secure-two.{{ proxy_domain }}
