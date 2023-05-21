@@ -7,6 +7,8 @@
     proxy_cert_dns_provider: desec
     proxy_dns_provider_env_vars:
       DESEC_TOKEN: "{{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }}"
+      DESEC_PROPAGATION_DELAY: 4000
+      DESEC_POLLING_INTERVAL: 30
     proxy_compose_project: traefik_auth_proxy_molecule
     proxy_auth_provider_env_vars:
       PROVIDERS_OIDC_ISSUER_URL: http://mock-oidc:8080/default
