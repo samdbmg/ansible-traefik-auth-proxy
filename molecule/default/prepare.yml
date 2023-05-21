@@ -62,3 +62,15 @@
         - demo.{{ proxy_temp_name }}
         - secure.{{ proxy_temp_name }}
         - secure-two.{{ proxy_temp_name }}
+
+    - name: Wait for DNS propagation
+      debug:
+        msg: Waiting for {{ item }} to appear in DNS
+      until: lookup('community.general.dig', item) == "127.0.0.1"
+      retries: 30
+      delay: 20
+      loop:
+        - auth.{{ proxy_domain }}
+        - demo.{{ proxy_domain }}
+        - secure.{{ proxy_domain }}
+        - secure-two.{{ proxy_domain }}
