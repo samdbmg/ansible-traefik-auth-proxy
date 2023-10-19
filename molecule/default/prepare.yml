@@ -45,16 +45,19 @@
 
     - name: Set domain fact
       ansible.builtin.set_fact:
-        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode }}"
-        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
+        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode | trim }}"
+        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
 
     - name: Note the domain in use
       ansible.builtin.debug:
         msg: Using domain {{ proxy_domain }} for certificates
 
-    - name: Create DNS entries for temporary domain  # noqa no-changed-when
-      ansible.builtin.command:
-        cmd: python3 desec.py --token {{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }} add-record {{ base_domain }} -t A -s {{ item }} -r 127.0.0.1
+    - name: Create DNS entries for temporary domain
+      community.general.cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "{{ item }}"
+        type: A
+        value: 127.0.0.1
       delegate_to: localhost
       become: false
       loop:
