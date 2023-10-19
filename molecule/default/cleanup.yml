@@ -24,22 +24,26 @@
 
     - name: Set domain fact
       ansible.builtin.set_fact:
-        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
+        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
 
     - name: List DNS entries
       ansible.builtin.command:
-        cmd: python3 desec.py --token {{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }} get-records {{ base_domain }}
+        cmd: python3 cf-list-records.py {{ base_domain }} {{ proxy_domain }} -s
       register: dns_entry_list
       delegate_to: localhost
       changed_when: false
 
     - name: Set fact with DNS entries
       ansible.builtin.set_fact:
-        dns_entries: "{{ dns_entry_list.stdout_lines | select('match', '.*' + proxy_domain + '.*') }}"
+        dns_entries: "{{ dns_entry_list.stdout_lines }}"
 
-    - name: Remove DNS entries  # noqa no-changed-when
-      ansible.builtin.command:
-        cmd: python3 desec.py --token {{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }} delete-record {{ base_domain }} -s {{ item.split('.' + base_domain)[0] }} -t {{ item.split(' ')[3] }}
+    - name: Remove DNS entries
+      community.general.cloudflare_dns:
+        zone: "{{ base_domain }}"
+        record: "{{ item }}"
+        type: A
+        value: 127.0.0.1
+        state: absent
       loop: "{{ dns_entries }}"
       delegate_to: localhost
 

@@ -15,8 +15,8 @@
 
     - name: Set domain fact
       ansible.builtin.set_fact:
-        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode }}"
-        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode }}.{{ base_domain }}"
+        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode | trim }}"
+        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
 
     - name: Download LE staging root
       ansible.builtin.get_url:
