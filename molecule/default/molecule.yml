@@ -29,7 +29,7 @@ platforms:
 provisioner:
   name: ansible
   env:
-    BASE_DOMAIN: ${BASE_DOMAIN:-ci-dns.samn.co.uk}
+    BASE_DOMAIN: ${BASE_DOMAIN:-samdbmg.uk}
     RUN_TYPE: ${RUN_TYPE:-local}
     DESEC_TOKEN: ${DESEC_TOKEN}
 scenario:
