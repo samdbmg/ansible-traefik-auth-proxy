@@ -57,7 +57,7 @@ jobs:
         run: pip3 install ansible ansible-lint 'molecule>=5.0.1' molecule-plugins[docker] dnspython cloudflare
 
       - name: Create instances, prepare environment
-        run: molecule create && molecule prepare
+        run: molecule create
       - name: Apply the role to the instance
         run: molecule converge
       - name: Check the role is idempotent
