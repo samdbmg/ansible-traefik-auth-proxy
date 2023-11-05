@@ -21,6 +21,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: traefik_auth_proxy  # Check out to where Ansible expects to find it
+      - name: Lostonte
+        run: ls && pwd
+
       - name: Setup Python 3
         uses: actions/setup-python@v4
         with:
@@ -32,8 +35,7 @@ jobs:
       - name: Lint code.
         run: |
             yamllint .
-            # Ignore role name when linting
-            ansible-lint -x 'role-name'
+            ansible-lint
   test-molecule:
     name: Test with Molecule
     runs-on: ubuntu-latest
@@ -90,6 +92,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+        with:
+          path: traefik_auth_proxy  # Check out to where Ansible expects to find it
+
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2

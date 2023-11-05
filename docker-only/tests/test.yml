@@ -10,13 +10,13 @@
         temp_work_dir: "{{ playbook_dir }}/.."
         run_type: "{{ lookup('ansible.builtin.env', 'RUN_TYPE') }}"
         base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
-        desec_token: "{{ lookup('ansible.builtin.env', 'DESEC_TOKEN') }}"
+        clourflare_token: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_TOKEN') }}"
         desec_script: "{{ playbook_dir }}/../../molecule/default/desec.py"
 
     - name: Check env vars were set
       fail:
-        msg: A required environment variable (one of RUN_TYPE, BASE_DOMAIN or DESEC_TOKEN) was not set
-      when: run_type == "" or base_domain == "" or desec_token == ""
+        msg: A required environment variable (one of RUN_TYPE, BASE_DOMAIN or CLOUDFLARE_TOKEN) was not set
+      when: run_type == "" or base_domain == "" or clourflare_token == ""
 
 - name: Prepare DNS entries
   hosts: all
