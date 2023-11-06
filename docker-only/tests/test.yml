@@ -45,13 +45,15 @@
       ansible.builtin.template:
         src: env.j2
         dest: "{{ playbook_dir }}/../.env"
+        mode: 0600
 
     - name: Create config directory
       ansible.builtin.file:
         path: "{{ playbook_dir }}/../traefik-config"
         state: directory
+        mode: 0755
 
-    - name: Generate config file
+    - name: Generate config file  # noqa command-instead-of-shell no-changed-when
       ansible.builtin.shell:
         cmd: docker-compose -p traefik_auth_proxy_compose run config-generator
         chdir: "{{ playbook_dir }}/.."

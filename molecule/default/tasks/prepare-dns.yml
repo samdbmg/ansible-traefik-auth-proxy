@@ -37,7 +37,7 @@
     - secure-two.{{ proxy_temp_name }}
 
 - name: Wait for DNS propagation
-  debug:
+  ansible.builtin.debug:
     msg: Waiting for {{ item }} to appear in DNS
   until: lookup('community.general.dig', item) == "127.0.0.1"
   retries: 30
