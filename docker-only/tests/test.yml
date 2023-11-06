@@ -14,7 +14,7 @@
         desec_script: "{{ playbook_dir }}/../../molecule/default/desec.py"
 
     - name: Check env vars were set
-      fail:
+      ansible.builtin.fail:
         msg: A required environment variable (one of RUN_TYPE, BASE_DOMAIN or CLOUDFLARE_TOKEN) was not set
       when: run_type == "" or base_domain == "" or clourflare_token == ""
 
