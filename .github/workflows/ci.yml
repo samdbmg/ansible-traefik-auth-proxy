@@ -110,23 +110,23 @@ jobs:
         id: setup-python
 
       - name: Install deps
-        run: pip3 install ansible docker docker-compose
+        run: pip3 install ansible ansible-lint 'molecule>=5.0.1' molecule-plugins[docker] dnspython cloudflare
 
       - name: Resolve mock OIDC server to localhost
         run: echo "127.0.0.1 mock-oidc" | sudo tee -a /etc/hosts
 
       - name: Run test playbook
         run: ansible-playbook -i tests/inventory tests/test.yml --skip-tags cleanup -e ansible_python_interpreter='${{ steps.setup-python.outputs.python-path }}'
-        working-directory: ./docker-only
+        working-directory: ./traefik_auth_proxy/docker-only
 
       - name: Print proxy logs for debugging
         if: failure()
         run: |
           docker ps
           docker-compose -p traefik_auth_proxy_compose logs
-        working-directory: ./docker-only
+        working-directory: ./traefik_auth_proxy/docker-only
 
       - name: Clean up afterwards
         if: always()
         run: ansible-playbook -i tests/inventory tests/test.yml --tags facts,cleanup -e ansible_python_interpreter='${{ steps.setup-python.outputs.python-path }}'
-        working-directory: ./docker-only
+        working-directory: ./traefik_auth_proxy/docker-only
