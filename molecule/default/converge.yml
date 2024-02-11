@@ -14,6 +14,10 @@
       PROVIDERS_OIDC_CLIENT_SECRET: test
     proxy_config_dir: /tmp/traefik_auth_proxy_molecule
     base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
+    proxy_rules:
+      - name: skip_auth_header
+        rule: Headers(`Authorization`, `SkipMe`)
+        action: allow
   tasks:
     - name: Grab domain name from target
       become: true
