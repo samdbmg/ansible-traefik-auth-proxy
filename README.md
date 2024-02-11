@@ -32,6 +32,7 @@ Role Variables
 - `proxy_oauth_provider: oidc`: Chosen OAuth provider. One of `google` or `oidc` (see also `default-provider` option in https://github.com/thomseddon/traefik-forward-auth#option-details).
 - `proxy_auth_provider_env_vars: {}`: The set of options to pass to the auth provider, from https://github.com/thomseddon/traefik-forward-auth/wiki/Provider-Setup.
 - `proxy_requires_http: false`: Set to true to enable HTTP endpoints with traefik (rather than just redirecting to https).
+- `proxy_rules: []`: List of rules to allow more fine-grained control of auth actions
 - `proxy_config_dir: /etc/traefik_proxy`: Where the config files for Traefik will be written to.
 - `proxy_docker_dir: /etc/traefik_proxy`: Where the Docker Compose files will be written to.
 
@@ -95,6 +96,24 @@ docker run --rm \
   -l traefik.http.routers.server.middlewares=traefik-forward-auth \
   nginx
 ```
+
+Rules Config
+------------
+
+To set custom rules that apply to certain endpoints, set the `proxy_rules` variable.
+
+For example, to allow only a specific user to access a certain host, set:
+```yaml
+proxy_rules:
+  # List of objects containing keys from the `rules` section in https://github.com/thomseddon/traefik-forward-auth?tab=readme-ov-file#option-details
+  - name: allow_only_me
+    action: auth
+    rule: Host(`example.com`)
+    whitelist:
+      - me@example.com
+```
+
+The `name` and `rule` keys are required, `action`, `whitelist` (as a list), `domain` and `provider` are also permitted.
 
 License
 -------

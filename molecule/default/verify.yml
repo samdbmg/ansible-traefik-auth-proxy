@@ -140,3 +140,18 @@
       delay: 10
       until: secure_site_two.status != -1
       failed_when: '"<h1>Welcome to nginx!</h1>" not in secure_site_two.content'
+
+    # Check rule is applied
+    - name: Check the rule applies to secured sites
+      ansible.builtin.uri:
+        url: https://secure.{{ proxy_domain }}
+        validate_certs: true
+        ca_path: /tmp/le-staging.pem
+        return_content: true
+        headers:
+          Authorization: SkipMe
+      register: public_site
+      failed_when: '"<h1>Welcome to nginx!</h1>" not in public_site.content'
+      retries: 20
+      delay: 10
+      until: public_site is not failed
