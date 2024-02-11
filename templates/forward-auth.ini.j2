@@ -2,3 +2,20 @@ default-provider=oidc
 auth-host={{ proxy_auth_domain }}
 cookie-domain={{ proxy_domain }}
 secret={{ cookie_signing_secret }}
+
+# Generated rules
+{% for rule in proxy_rules -%}
+# Rule for {{ rule.rule }}
+rule.{{ rule.name }}.rule={{ rule.rule }}
+
+{% if "action" in rule -%}rule.{{ rule.name }}.action={{ rule.action }}{% endif %}
+{% if "domain" in rule -%}rule.{{ rule.name }}.domain={{ rule.domain }}{% endif %}
+{% if "provider" in rule -%}rule.{{ rule.name }}.provider={{ rule.provider }}{% endif %}
+
+{% if "whitelist" in rule -%}
+{% for whitelist_entry in rule.whitelist -%}
+rule.{{ rule.name }}.whitelist={{ whitelist_entry }}
+{%- endfor %}
+{% endif -%}
+
+{%- endfor %}
