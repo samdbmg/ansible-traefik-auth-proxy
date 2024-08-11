@@ -42,7 +42,7 @@ jobs:
     env:
       PY_COLORS: '1'
       ANSIBLE_FORCE_COLOR: '1'
-      MOLECULE_DISTRO: ubuntu2004
+      MOLECULE_DISTRO: ubuntu2404
       RUN_TYPE: ci
       CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
