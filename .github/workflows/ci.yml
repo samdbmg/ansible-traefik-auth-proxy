@@ -2,6 +2,8 @@
 name: CI with Molecule
 "on":
   push:
+    branches:
+      - 'main'
   pull_request:
   workflow_dispatch:
   # Build master every Thursday at 7AM (schedule only applies to the master branch)
