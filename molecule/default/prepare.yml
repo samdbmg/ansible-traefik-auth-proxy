@@ -14,12 +14,15 @@
         dest: /var/run/docker.sock
         state: link
       changed_when: false
-    - name: Install the docker module
+    - name: Install the requests module
       ansible.builtin.pip:
         name:
-          - "docker < 7.0.0"
-          - docker-compose
+          - requests
         state: present
+  roles:
+    - name: geerlingguy.docker
+      vars:
+        docker_service_manage: false
 
 - name: Set up DNS environment
   hosts: all

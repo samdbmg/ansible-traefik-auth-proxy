@@ -78,7 +78,7 @@
 # Launch containers
 - name: Start containers
   become: True
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ proxy_docker_dir }}"
     state: present
     project_name: "{{ proxy_compose_project }}"
