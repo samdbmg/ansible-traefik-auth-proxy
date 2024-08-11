@@ -3,9 +3,9 @@
 - name: Restart containers on config change
   listen: restart_traefik
   become: True
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ proxy_docker_dir }}"
     project_name: "{{ proxy_compose_project }}"
-    restarted: true
+    state: restarted
   ignore_errors: "{{ ansible_check_mode }}"
   when: skip_launch is not defined

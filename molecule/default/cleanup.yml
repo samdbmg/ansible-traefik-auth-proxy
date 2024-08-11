@@ -69,7 +69,7 @@
       delegate_to: localhost
 
     - name: Stop proxy containers
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: /etc/traefik_proxy
         state: absent
         project_name: traefik_auth_proxy_molecule

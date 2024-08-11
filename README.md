@@ -15,7 +15,9 @@ Features:
 Requirements
 ------------
 
-Docker needs to be available on your target (as does docker-compose) and the `docker` Python module.
+Docker needs to be available on your target (as does docker-compose) and the `docker` and `requests` Python modules.
+
+Also requires the [community.docker](https://docs.ansible.com/ansible/latest/collections/community/docker/index.html) collection in a version >= 3.6.0.
 
 Role Variables
 --------------
