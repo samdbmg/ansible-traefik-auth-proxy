@@ -76,7 +76,7 @@
         remove_volumes: true
       register: stop_proxy_containers
       # Ignore failures caused by the Compose file not existing.
-      failed_when: stop_proxy_containers.failed == true and "Can't find a suitable configuration file" not in stop_proxy_containers.msg
+      failed_when: stop_proxy_containers.failed == true and "Can't find a suitable configuration file" not in stop_proxy_containers.msg and "is not a directory" not in stop_proxy_containers.msg
       # Ignore errors because the container doesn't exist
       ignore_unreachable: true
 
