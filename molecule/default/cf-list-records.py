@@ -2,10 +2,8 @@
 
 import argparse
 import logging
-import os
 
-import CloudFlare
-import requests
+import cloudflare
 
 logging.basicConfig()
 logger = logging.getLogger("cf-list-dns")
@@ -20,39 +18,39 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    cf = CloudFlare.CloudFlare()
+    cf = cloudflare.Cloudflare()
     # query for the zone name and expect only one value back
     try:
-        zones = cf.zones.get(params = {'name':args.zone,'per_page':1})
-    except CloudFlare.exceptions.CloudFlareAPIError as e:
+        zone = None
+        for z in cf.zones.list(name=args.zone, per_page=1):
+            zone = z
+            break
+    except cloudflare.APIError as e:
         exit('/zones.get %d %s - api call failed' % (e, e))
     except Exception as e:
         exit('/zones.get - %s - api call failed' % (e))
 
-    if len(zones) == 0:
+    if zone is None:
         exit('No zones found')
     
     # extract the zone_id which is needed to process that zone
-    zone = zones[0]
-    zone_id = zone['id']
+    zone_id = zone.id
     logger.info(f"Looking up records matching {args.search} in {zone_id}")
 
     # request the DNS records from that zone
     try:
-        dns_records = cf.zones.dns_records.get(zone_id, params={'search': args.search})
-    except CloudFlare.exceptions.CloudFlareAPIError as e:
+        for record in cf.dns.records.list(zone_id=zone_id, search=args.search):
+            name = record.name
+
+            if not args.search in name:
+                # Eliminate false positives picked up by search
+                continue
+
+            if args.strip_domain:
+                name = name.replace(args.zone, "").rstrip('.')
+
+            print(name)
+    except cloudflare.APIError as e:
         exit('/zones/dns_records.get %d %s - api call failed' % (e, e))
-
-    for record in dns_records:
-        name = record['name']
-
-        if not args.search in name:
-            # Eliminate false positives picked up by search
-            continue
-
-        if args.strip_domain:
-            name = name.replace(args.zone, "").rstrip('.')
-
-        print(name)
 
     logger.info("Done")    
