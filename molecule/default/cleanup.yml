@@ -27,11 +27,21 @@
         proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
 
     - name: List DNS entries
-      ansible.builtin.command:
-        cmd: python3 cf-list-records.py {{ base_domain }} {{ proxy_domain }} -s
-      register: dns_entry_list
+      block:
+        - name: Install the CloudFlare module
+          ansible.builtin.pip:
+            virtualenv: "{{ venv_dir }}"
+            virtualenv_command: "{{ ansible_playbook_python }} -m venv"
+            name:
+              - "cloudflare >= 3.0.0"
+        - name: List DNS entries
+          ansible.builtin.command:
+            cmd: "{{ venv_dir }}/bin/python cf-list-records.py {{ base_domain }} {{ proxy_domain }} -s"
+          register: dns_entry_list
+          changed_when: false
       delegate_to: localhost
-      changed_when: false
+      vars:
+        venv_dir: /tmp/list-dns-venv
 
     - name: Set fact with DNS entries
       ansible.builtin.set_fact:
