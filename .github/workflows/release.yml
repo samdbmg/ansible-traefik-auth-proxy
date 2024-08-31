@@ -15,19 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v3
-      - name: Create Tag and Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/checkout@v4
+      - name: Create release
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.event.inputs.version }}
-          release_name: Release ${{ github.event.inputs.version }}
+          artifacts: "release.tar.gz,foo/*.txt"
           body: ${{ github.event.inputs.description }}
-          draft: false
-          prerelease: false
-      - name: Publish to Ansible Galaxy
-        uses: robertdebock/galaxy-action@1.1.0
-        with:
-          galaxy_api_key: ${{ secrets.galaxy_api_key }}
+          tag: ${{ github.event.inputs.version }}
+          skipIfReleaseExists: true
