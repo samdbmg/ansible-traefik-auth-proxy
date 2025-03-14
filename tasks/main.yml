@@ -35,6 +35,9 @@
 - name: Create Traefik config file
   vars:
     extra_static_config_yaml: "{{ proxy_extra_static_config | to_nice_yaml }}"
+    _base_websecure_settings:
+      address: ":443"
+    websecure_settings_yaml: "{{ _base_websecure_settings | combine(proxy_endpoint_extra_settings) | to_nice_yaml }}"
   ansible.builtin.template:
     src: "traefik-static.yml.j2"
     dest: "{{ proxy_config_dir }}/traefik.yml"

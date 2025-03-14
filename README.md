@@ -38,6 +38,7 @@ Role Variables
 - `proxy_config_dir: /etc/traefik_proxy`: Where the config files for Traefik will be written to.
 - `proxy_docker_dir: /etc/traefik_proxy`: Where the Docker Compose files will be written to.
 - `proxy_extra_static_config`: Extra settings to add to the static config file, as a dict.
+- `proxy_endpoint_extra_settings`: Extra settings to add to the `entryPoint` for HTTPS.
 
 Example Playbook
 ----------------

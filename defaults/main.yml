@@ -85,3 +85,5 @@ proxy_forward_auth_label: latest
 
 # Additional static config to add to traefik-static.yml.j2
 proxy_extra_static_config: {}
+# Additional settings to add to the HTTPS listener entrypoint (port will be set by default)
+proxy_endpoint_extra_settings: {}
