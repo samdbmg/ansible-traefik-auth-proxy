@@ -11,6 +11,11 @@ entryPoints:
 
   websecure:
     address: ":443"
+    transport:
+      respondingTimeouts:
+        readTimeout: {{ proxy_response_timeout }}
+        idleTimeout: {{ proxy_response_timeout }}
+        writeTimeout: {{ proxy_response_timeout }}
 
 api:
   dashboard: true
