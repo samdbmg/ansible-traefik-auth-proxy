@@ -1,6 +1,6 @@
 galaxy_info:
   author: Sam Mesterton-Gibbons
-  role_name: traefix_auth_proxy
+  role_name: traefik_auth_proxy
   namespace: samdbmg
   description: Set up traefik, certificates, docker sockets and OAuth
 
