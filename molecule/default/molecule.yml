@@ -1,6 +1,8 @@
 ---
 dependency:
   name: galaxy
+  #options:
+  #  roles_path: "$MOLECULE_PROJECTS_DORECTORY/.."
 driver:
   name: docker
 lint: |
@@ -34,5 +36,8 @@ provisioner:
     BASE_DOMAIN: ${BASE_DOMAIN:-samdbmg.uk}
     RUN_TYPE: ${RUN_TYPE:-local}
     DESEC_TOKEN: ${DESEC_TOKEN}
+  config_options:
+    defaults:
+      roles_path: "$HOME/.ansible/roles/:$MOLECULE_PROJECT_DIRECTORY/.."
 scenario:
   name: default
