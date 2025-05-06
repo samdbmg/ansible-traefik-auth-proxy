@@ -6,6 +6,14 @@ name: CI with Molecule
       - 'main'
   pull_request:
   workflow_dispatch:
+    inputs:
+      verbosity:
+        description: Set Ansible output verbosity
+        type: choice
+        options:
+         - "0"
+         - "3"
+        default: "0"
   # Build master every Thursday at 7AM (schedule only applies to the master branch)
   schedule:
     - cron: "0 7 * * 4"
@@ -17,6 +25,8 @@ defaults:
 jobs:
   lint:
     name: Lint
+    env:
+      MOLECULE_VERBOSITY: ${{ github.event.inputs.verbosity || 0 }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -46,6 +56,7 @@ jobs:
       RUN_TYPE: ci
       CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+      MOLECULE_VERBOSITY: ${{ github.event.inputs.verbosity || 0 }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -66,7 +77,7 @@ jobs:
         run: molecule converge
       - name: Check the role is idempotent
         run: molecule idempotence
-      - name: Run tests
+      - name: Run test 
         run: molecule verify
       - name: Print containers and logs for debugging
         if: failure()
