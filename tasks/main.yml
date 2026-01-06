@@ -33,6 +33,8 @@
 
 # Template out config file for Traefik
 - name: Create Traefik config file
+  vars:
+    extra_static_config_yaml: "{{ proxy_extra_static_config | to_nice_yaml }}"
   ansible.builtin.template:
     src: "traefik-static.yml.j2"
     dest: "{{ proxy_config_dir }}/traefik.yml"
