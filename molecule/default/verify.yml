@@ -85,7 +85,7 @@
         validate_certs: true
         ca_path: /tmp/le-staging.pem
         return_content: true
-        follow_redirects: false
+        follow_redirects: "none"
       register: secure_site_initial_access
       # Report failure if it works - this isn't supposed to be accessible!
       failed_when: secure_site_initial_access.status != 307 and secure_site_initial_access.status != 302
@@ -97,7 +97,7 @@
       ansible.builtin.uri:
         url: "{{ secure_site_initial_access.location }}"
         return_content: true
-        follow_redirects: false
+        follow_redirects: "none"
       register: secure_site_auth_redirect
       failed_when: secure_site_auth_redirect.status != 302 and secure_site_auth_redirect.status != 307
 
@@ -106,7 +106,7 @@
         url: "{{ secure_site_auth_redirect.location }}"
         ca_path: /tmp/le-staging.pem
         return_content: true
-        follow_redirects: false
+        follow_redirects: "none"
         headers:
           Cookie: "{{ secure_site_initial_access.set_cookie }}"
       register: secure_site_code
@@ -120,7 +120,7 @@
         url: "{{ secure_site_code.location }}"
         ca_path: /tmp/le-staging.pem
         return_content: true
-        follow_redirects: false
+        follow_redirects: "none"
         headers:
           Cookie: "{{ secure_site_code.set_cookie }}"
       register: secure_site_access
@@ -131,7 +131,7 @@
         url: https://secure-two.{{ proxy_domain }}
         ca_path: /tmp/le-staging.pem
         return_content: true
-        follow_redirects: false
+        follow_redirects: "none"
         headers:
           Cookie: "{{ secure_site_code.set_cookie }}"
       register: secure_site_two
