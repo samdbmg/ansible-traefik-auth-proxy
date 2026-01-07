@@ -2,11 +2,12 @@
 - name: Set up container to behave like a Docker host
   hosts: all
   become: true
-  tasks:
+  pre_tasks:
     - name: Update apt cache (Ubuntu)
       ansible.builtin.apt:
         update_cache: true
       when: ansible_distribution == "Ubuntu"
+  tasks:
     # Apply the Docker socket workaround in https://github.com/ansible-community/molecule/issues/1568
     - name: Link the docker socket
       ansible.builtin.file:
