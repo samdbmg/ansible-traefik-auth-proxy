@@ -1,0 +1,44 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    proxy_letsencrypt_email: blackhole@samn.co.uk
+    proxy_cert_method: dns
+    proxy_cert_dns_provider: cloudflare
+    proxy_dns_provider_env_vars:
+      CLOUDFLARE_DNS_API_TOKEN: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_TOKEN') }}"
+    proxy_compose_project: traefik_auth_proxy_molecule
+    proxy_auth_provider_env_vars:
+      PROVIDERS_OIDC_ISSUER_URL: http://mock-oidc:8080/default
+      PROVIDERS_OIDC_CLIENT_ID: test
+      PROVIDERS_OIDC_CLIENT_SECRET: test
+    proxy_config_dir: /tmp/traefik_auth_proxy_molecule
+    base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
+  tasks:
+    - name: Grab domain name from target
+      become: true
+      ansible.builtin.slurp:
+        src: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
+      register: molecule_domain_data_slurped
+
+    - name: Set domain fact
+      ansible.builtin.set_fact:
+        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode | trim }}"
+        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
+
+    - name: "Include role"
+      ansible.builtin.include_role:
+        # Apply the role from the top-level directory name rather than hardcoding
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+    - name: Launch OIDC mock server
+      community.docker.docker_container:
+        name: traefik_auth_proxy_molecule_oidc
+        image: ghcr.io/navikt/mock-oauth2-server:0.5.1
+        ports:
+          - 8080:8080
+        networks:
+          - name: traefik
+            aliases: mock-oidc
+        env:
+          JSON_CONFIG: '{"interactiveLogin": false}'
+        hostname: mock-oidc
