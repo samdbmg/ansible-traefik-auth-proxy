@@ -86,8 +86,8 @@ jobs:
         if: failure()
         run: |
           docker ps;
-          docker logs traefik_auth_proxy_molecule_reverse-proxy_1;
-          docker logs traefik_auth_proxy_molecule_forward-auth_1;
+          docker logs traefik_auth_proxy_molecule-reverse-proxy-1;
+          docker logs traefik_auth_proxy_molecule-forward-auth-1;
           date
 
       - name: Clean up instance
