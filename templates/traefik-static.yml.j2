@@ -10,7 +10,7 @@ entryPoints:
 {% endif %}
 
   websecure:
-    address: ":443"
+    {{ websecure_settings_yaml | indent(4) }}
 
 api:
   dashboard: true
@@ -42,4 +42,6 @@ certificatesResolvers:
 serversTransport:
   insecureSkipVerify: true
 
+{% if not extra_static_config_yaml.startswith("{}") %}
 {{ extra_static_config_yaml }}
+{% endif %}

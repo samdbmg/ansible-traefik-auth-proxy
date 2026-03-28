@@ -1,0 +1,52 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  vars:
+    base_domain: "{{ lookup('ansible.builtin.env', 'BASE_DOMAIN') }}"
+  tasks:
+    - name: Grab domain name from target
+      become: true
+      ansible.builtin.slurp:
+        src: "/tmp/traefik_auth_proxy_molecule/molecule_domain"
+      register: molecule_domain_data_slurped
+
+    - name: Set domain fact
+      ansible.builtin.set_fact:
+        proxy_temp_name: "{{ molecule_domain_data_slurped.content | b64decode | trim }}"
+        proxy_domain: "{{ molecule_domain_data_slurped.content | b64decode | trim }}.{{ base_domain }}"
+
+    - name: Download LE staging root
+      ansible.builtin.get_url:
+        url: https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x1.pem
+        dest: /tmp/le-staging.pem
+        mode: '0440'
+
+    - name: Start a container hosting demo site
+      community.docker.docker_container:
+        name: authproxy-site-demo
+        image: nginx
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.demo.rule: Host(`demo.{{ proxy_domain }}`)
+          traefik.http.services.demo.loadbalancer.server.port: "80"
+          traefik.http.routers.demo.entrypoints: websecure
+          traefik.http.routers.demo.tls.certresolver: default
+          traefik.http.routers.middlewares: "hsts-headers@file"
+        networks:
+          - name: traefik
+
+    # Check demo site reachable
+    - name: Check the static demo site is reachable
+      ansible.builtin.uri:
+        url: https://demo.{{ proxy_domain }}
+        validate_certs: true
+        ca_path: /tmp/le-staging.pem
+        return_content: true
+      register: public_site
+      failed_when: '"<h1>Welcome to nginx!</h1>" not in public_site.content'
+      retries: 20
+      delay: 10
+      until: public_site is not failed
