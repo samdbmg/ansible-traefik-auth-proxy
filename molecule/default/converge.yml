@@ -18,6 +18,11 @@
       - name: skip_auth_header
         rule: Headers(`Authorization`, `SkipMe`)
         action: allow
+    proxy_extra_static_config:
+      logs:
+        level: INFO
+      accessLog:
+        format: common
   tasks:
     - name: Grab domain name from target
       become: true
